@@ -1,0 +1,24 @@
+// GSheet-namedQuery - 2023 @ControlAltPete
+// Usage: in a Gsheet cell: =query( range, namedQuery( range, "SELECT [name], [age] WHERE [age] >=18"))
+// Converts the column names to Coln references by examining the headers in the range
+// Protects the query so it still works if you insert/delete new columns
+
+function namedQuery(dataRange, queryStr) {
+
+  // input:  "SELECT [name], [age] WHERE [age] > 18"
+  // output: "SELECT Col1, Col4 WHERE Col4 > 18"
+  
+  let queryColumns = queryStr.matchAll(/\[(.*?)\]/g);
+  // literal [brackets] with non-greedy everything inside
+  let queryColumnBrackets = [...queryColumns].map(col => col[0]); // with [brackets]
+  let uniqueColumns = [...new Set(queryColumnBrackets)];
+  let foundDataColumn;
+  let newQueryString = queryStr;
+  uniqueColumns.forEach(col => {
+    foundDataColumn = dataRange[0].indexOf(col.slice(1, -1)); // without brackets
+    if (foundDataColumn !== -1) {
+      newQueryString = newQueryString.replaceAll(col, `Col${foundDataColumn + 1}`);
+    }
+  })
+  return newQueryString;
+}
